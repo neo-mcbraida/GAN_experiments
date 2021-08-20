@@ -23,6 +23,7 @@ BATCH_SIZE = 256
 train_dataset = tf.data.Dataset.from_tensor_slices(train_images).shuffle(BUFFER_SIZE).batch(BATCH_SIZE)
 
 def make_generator_model():
+  """
     model = tf.keras.Sequential()
     model.add(layers.Dense(7*7*256, use_bias=False, input_shape=(100,)))
     model.add(layers.BatchNormalization())
@@ -43,8 +44,9 @@ def make_generator_model():
 
     model.add(layers.Conv2DTranspose(1, (5, 5), strides=(2, 2), padding='same', use_bias=False, activation='tanh'))
     assert model.output_shape == (None, 28, 28, 1)
-
+  """
     return model
+  
 
 generator = make_generator_model()
 
@@ -54,6 +56,7 @@ generated_image = generator(noise, training=False)
 plt.imshow(generated_image[0, :, :, 0], cmap='gray')
 
 def make_discriminator_model():
+  """
     model = tf.keras.Sequential()
     model.add(layers.Conv2D(64, (5, 5), strides=(2, 2), padding='same',
                                      input_shape=[28, 28, 1]))
@@ -66,7 +69,7 @@ def make_discriminator_model():
 
     model.add(layers.Flatten())
     model.add(layers.Dense(1))
-
+  """
     return model
 
 discriminator = make_discriminator_model()
@@ -164,12 +167,24 @@ def generate_and_save_images(model, epoch, test_input):
   plt.savefig('image_at_epoch_{:04d}.png'.format(epoch))
   plt.show()
 
-train(train_dataset, EPOCHS)
+#train(train_dataset, EPOCHS)
 
-checkpoint.restore(tf.train.latest_checkpoint(checkpoint_dir))
+#checkpoint.restore(tf.train.latest_checkpoint(checkpoint_dir))
 
 # Display a single image using the epoch number
 def display_image(epoch_no):
   return PIL.Image.open('image_at_epoch_{:04d}.png'.format(epoch_no))
 
-display_image(EPOCHS)
+#display_image(EPOCHS)
+
+def load_words():
+    with open('words_alpha.txt') as word_file:
+        valid_words = set(word_file.read().split())
+
+    return valid_words
+
+
+if __name__ == '__main__':
+    english_words = load_words()
+    # demo print
+    print('fate' in english_words)
