@@ -4,26 +4,67 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import PIL
+import re
 from tensorflow.keras import layers
 import tensorflow as tf
 
 import time
 
 from IPython import display
+from tensorflow.python.keras.layers.core import Dense
 
-(train_images, train_labels), (_, _) = tf.keras.datasets.mnist.load_data()
+#(train_images, train_labels), (_, _) = tf.keras.datasets.mnist.load_data()
 
-train_images = train_images.reshape(train_images.shape[0], 28, 28, 1).astype('float32')
-train_images = (train_images - 127.5) / 127.5  # Normalize the images to [-1, 1]
+#train_images = train_images.reshape(train_images.shape[0], 28, 28, 1).astype('float32')
+#train_images = (train_images - 127.5) / 127.5  # Normalize the images to [-1, 1]
 
 BUFFER_SIZE = 60000
 BATCH_SIZE = 256
 
 # Batch and shuffle the data
-train_dataset = tf.data.Dataset.from_tensor_slices(train_images).shuffle(BUFFER_SIZE).batch(BATCH_SIZE)
+#train_dataset = tf.data.Dataset.from_tensor_slices(train_images).shuffle(BUFFER_SIZE).batch(BATCH_SIZE)
+
+def load_words():
+    valid_words = [""]
+    with open('words_alpha.txt') as word_file:
+        valid_words += list(word_file.read().split())
+
+    return valid_words
+
+
+words = load_words()#{i:words[i] for i in range(1, len(words))}
+
+diction = {i:words[i] for i in range(1, len(words))}
+
+#for i in range(len(diction)):
+ # words.append(diction[i])
+
+with open('movie_lines.txt') as f:
+    lines = f.readlines()
+
+temp = []
+for line in lines:
+    line = line[36:]
+    i = 0
+    u = 0
+    for char in line:
+        i += 1
+        if char == "+":
+            u = i
+    line = line[u:]
+    line = re.sub(r"[']", '', line)
+    line = re.sub(r"[^a-zA-Z]+", ' ', line)
+    line = line.lower()
+    line = line.split()
+    line = [diction[words.index(word)] for word in line if word in words]
+lines = temp
+
+print(lines[0])
+#words.index to get key
+
 
 def make_generator_model():
-  """
+    """
     model = tf.keras.Sequential()
     model.add(layers.Dense(7*7*256, use_bias=False, input_shape=(100,)))
     model.add(layers.BatchNormalization())
@@ -44,9 +85,12 @@ def make_generator_model():
 
     model.add(layers.Conv2DTranspose(1, (5, 5), strides=(2, 2), padding='same', use_bias=False, activation='tanh'))
     assert model.output_shape == (None, 28, 28, 1)
-  """
+    """
+    inputSHape = [1, 1]
+    model = tf.keras.Sequential()
+    model.add(layers.LSTM(25, input_shape=inputSHape, stateful=True))
+    model.add(Dense(2, activation="relu"))#outputs whether word key + whether another word is needed.
     return model
-  
 
 generator = make_generator_model()
 
@@ -56,7 +100,7 @@ generated_image = generator(noise, training=False)
 plt.imshow(generated_image[0, :, :, 0], cmap='gray')
 
 def make_discriminator_model():
-  """
+    """
     model = tf.keras.Sequential()
     model.add(layers.Conv2D(64, (5, 5), strides=(2, 2), padding='same',
                                      input_shape=[28, 28, 1]))
@@ -69,7 +113,11 @@ def make_discriminator_model():
 
     model.add(layers.Flatten())
     model.add(layers.Dense(1))
-  """
+    """
+    inputSHape = [1, 1]
+    model = tf.keras.Sequential()
+    model.add(layers.LSTM(25, input_shape=inputSHape, stateful=True))
+    model.add(Dense(2, activation="relu"))#outputs whether word key + whether another word is needed.
     return model
 
 discriminator = make_discriminator_model()
