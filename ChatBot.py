@@ -7,10 +7,10 @@ import PIL
 import re
 from tensorflow.keras import layers
 import tensorflow as tf
-
+import csv
 import time
 
-from IPython import display
+#from IPython import display
 from tensorflow.python.keras.layers.core import Dense
 
 #(train_images, train_labels), (_, _) = tf.keras.datasets.mnist.load_data()
@@ -26,7 +26,7 @@ BATCH_SIZE = 256
 
 def load_words():
     valid_words = [""]
-    with open('words_alpha.txt') as word_file:
+    with open('C:/Users/nsmne/Documents/GAN_experiments/words_alpha.txt') as word_file:
         valid_words += list(word_file.read().split())
 
     return valid_words
@@ -39,12 +39,12 @@ diction = {i:words[i] for i in range(1, len(words))}
 #for i in range(len(diction)):
  # words.append(diction[i])
 
-with open('movie_lines.txt') as f:
+with open('C:/Users/nsmne/Documents/GAN_experiments/movie_lines.txt') as f:
     lines = f.readlines()
 
 temp = []
 for line in lines:
-    line = line[36:]
+    #line = line[36:]
     i = 0
     u = 0
     for char in line:
@@ -56,12 +56,19 @@ for line in lines:
     line = re.sub(r"[^a-zA-Z]+", ' ', line)
     line = line.lower()
     line = line.split()
-    line = [diction[words.index(word)] for word in line if word in words]
+    l = [words.index(word) for word in line if word in words]
+    temp.insert(0, l)
 lines = temp
 
 print(lines[0])
 #words.index to get key
-
+with open('C:/Users/nsmne/Documents/GAN_experiments/inputData.csv', 'w', newline='') as f:
+      
+    # using csv.writer method from CSV package
+    write = csv.writer(f)
+      
+   # write.writerow(fields)
+    write.writerows(lines)
 
 def make_generator_model():
     """
