@@ -43,6 +43,18 @@ with open('C:/Users/nsmne/Documents/GAN_experiments/movie_lines.txt') as f:
     lines = f.readlines()
 
 temp = []
+convo = []
+
+def getLineNum(line):
+    line = line[1:]
+    num = ""
+    for char in line:
+        if char == " ":
+            break
+        else:
+            num += char
+    return int(num)        
+
 for line in lines:
     #line = line[36:]
     i = 0
